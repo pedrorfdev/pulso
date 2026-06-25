@@ -1,18 +1,17 @@
 interface AvatarStackProps {
-  people: { id: string; name: string; avatarUrl: string | null }[]
-  max?: number
+  people: { id: string; name?: string | null; avatarUrl?: string | null }[];
+  max?: number;
 }
 
 /**
  * Avatares sobrepostos dos confirmados — o elemento visual "vivo" do
- * hero card. Mostra até `max` avatares e um indicador "+N" pro resto,
- * evitando que a lista estoure o card em grupos grandes.
+ * hero card. Mostra até `max` avatares e um indicador "+N" pro resto.
  */
 export function AvatarStack({ people, max = 5 }: AvatarStackProps) {
-  if (people.length === 0) return null
+  if (people.length === 0) return null;
 
-  const visible = people.slice(0, max)
-  const overflow = people.length - visible.length
+  const visible = people.slice(0, max);
+  const overflow = people.length - visible.length;
 
   return (
     <div className="flex items-center">
@@ -25,7 +24,7 @@ export function AvatarStack({ people, max = 5 }: AvatarStackProps) {
           {person.avatarUrl ? (
             <img
               src={person.avatarUrl}
-              alt={person.name}
+              alt={person.name ?? ""}
               className="h-8 w-8 rounded-full border-2 border-surface object-cover"
             />
           ) : (
@@ -42,13 +41,14 @@ export function AvatarStack({ people, max = 5 }: AvatarStackProps) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-function initials(name: string): string {
+function initials(name?: string | null): string {
+  if (!name) return "?";
   return name
     .split(" ")
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("")
+    .join("");
 }

@@ -1,66 +1,57 @@
-import { useEffect, useRef } from "react"
-import { getSocket } from "@/shared/lib/socket"
-import { useOrgStore } from "@/shared/store/org-store"
-import { useAuth } from "./use-auth"
+import { useEffect, useRef } from "react";
+import { getSocket } from "@/shared/lib/socket";
+import { useOrgStore } from "@/shared/store/org-store";
+import { useAuth } from "./use-auth";
 
 /**
  * Conecta o socket uma vez por sessão e entra na sala da org ativa.
- *
- * Por que isso fica num hook central em vez de cada feature conectar
- * sozinha: o socket é uma conexão ÚNICA e cara (handshake, autenticação).
- * Se cada componente que precisasse de real-time chamasse io() de novo,
- * teríamos múltiplas conexões redundantes. Esse hook garante que a
- * conexão acontece uma vez (via getSocket(), que já é singleton) e o
- * join na sala da org acontece sempre que a org ativa muda.
- *
- * Esse hook NÃO escuta eventos específicos — ele só garante "estou
- * conectado e na sala certa". Cada feature (attendance, swaps...) usa
- * o hook `useSocketEvent` abaixo pra escutar o que importa pra ela.
+ * Quando a org muda, sai da sala anterior antes de entrar na nova.
  */
 export function useSocketConnection() {
-  const { isAuthenticated } = useAuth()
-  const activeOrgId = useOrgStore((s) => s.activeOrgId)
+  const { isAuthenticated } = useAuth();
+  const activeOrgId = useOrgStore((s) => s.activeOrgId);
+  const prevOrgIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated || !activeOrgId) return
+    if (!isAuthenticated || !activeOrgId) return;
 
-    const socket = getSocket()
+    const socket = getSocket();
 
     if (!socket.connected) {
-      socket.connect()
+      socket.connect();
     }
 
-    socket.emit("join:org", activeOrgId)
+    // Sai da sala anterior ao trocar de org
+    if (prevOrgIdRef.current && prevOrgIdRef.current !== activeOrgId) {
+      socket.emit("leave:org", prevOrgIdRef.current);
+    }
 
-    // Não desconectamos no cleanup — a conexão deve sobreviver entre
-    // navegações de tela. Só desconecta de verdade no logout
-    // (ver useInvalidateAuth / fluxo de logout, Épico futuro).
-  }, [isAuthenticated, activeOrgId])
+    socket.emit("join:org", activeOrgId);
+    prevOrgIdRef.current = activeOrgId;
+  }, [isAuthenticated, activeOrgId]);
 }
 
 /**
  * Escuta um evento específico do socket enquanto o componente estiver
  * montado, e remove o listener automaticamente ao desmontar.
- *
- * Uso típico: useSocketEvent('attendance:updated', (data) => { ... })
  */
 export function useSocketEvent<T = unknown>(
   eventName: string,
-  handler: (payload: T) => void
+  handler: (payload: T) => void,
 ) {
-  const handlerRef = useRef(handler)
-  handlerRef.current = handler
+  const handlerRef = useRef(handler);
+  handlerRef.current = handler;
 
   useEffect(() => {
-    const socket = getSocket()
+    const socket = getSocket();
 
     function wrappedHandler(payload: T) {
-      handlerRef.current(payload)
+      handlerRef.current(payload);
     }
 
-    socket.on(eventName, wrappedHandler)
+    socket.on(eventName, wrappedHandler);
     return () => {
-      socket.off(eventName, wrappedHandler)
-    }
-  }, [eventName])
+      socket.off(eventName, wrappedHandler);
+    };
+  }, [eventName]);
 }

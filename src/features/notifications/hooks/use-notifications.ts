@@ -1,60 +1,71 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { apiClient } from "@/shared/lib/api-client"
-import { useOrgStore } from "@/shared/store/org-store"
-import { isUnread } from "../types"
-import type { Notification } from "../types"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/shared/lib/api-client";
+import { useOrgStore } from "@/shared/store/org-store";
+import { isUnread } from "../types";
+import type { Notification } from "../types";
 
 export function useNotifications() {
-  const activeOrgId = useOrgStore((s) => s.activeOrgId)
+  const activeOrgId = useOrgStore((s) => s.activeOrgId);
   return useQuery({
     queryKey: ["notifications", activeOrgId],
     queryFn: async () => {
       const { data } = await apiClient.get<Notification[]>(
-        `/organizations/${activeOrgId}/notifications`
-      )
-      return data
+        `/organizations/${activeOrgId}/notifications`,
+      );
+      return data;
     },
     enabled: !!activeOrgId,
     refetchInterval: 60_000,
-  })
+  });
 }
 
+/**
+ * Lê o cache da query de notificações sem disparar nenhum fetch.
+ * TanStack Query v5 não aceita useQuery sem queryFn — usamos
+ * getQueryData direto no client pra evitar o erro.
+ */
 export function useUnreadCount(): number {
-  const activeOrgId = useOrgStore((s) => s.activeOrgId)
-  const { data } = useQuery<Notification[]>({
-    queryKey: ["notifications", activeOrgId],
-    enabled: false,
-  })
-  return (data ?? []).filter(isUnread).length
+  const activeOrgId = useOrgStore((s) => s.activeOrgId);
+  const queryClient = useQueryClient();
+  const data = queryClient.getQueryData<Notification[]>([
+    "notifications",
+    activeOrgId,
+  ]);
+  return (data ?? []).filter(isUnread).length;
 }
 
 export function useMarkNotificationRead() {
-  const activeOrgId = useOrgStore((s) => s.activeOrgId)
-  const queryClient = useQueryClient()
+  const activeOrgId = useOrgStore((s) => s.activeOrgId);
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (notificationId: string) =>
-      apiClient.patch(`/organizations/${activeOrgId}/notifications/${notificationId}/read`),
+      apiClient.patch(
+        `/organizations/${activeOrgId}/notifications/${notificationId}/read`,
+      ),
     onMutate: async (notificationId) => {
-      const queryKey = ["notifications", activeOrgId]
-      await queryClient.cancelQueries({ queryKey })
-      const previous = queryClient.getQueryData<Notification[]>(queryKey)
+      const queryKey = ["notifications", activeOrgId];
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<Notification[]>(queryKey);
       queryClient.setQueryData<Notification[]>(queryKey, (old) =>
         (old ?? []).map((n) =>
-          n.id === notificationId ? { ...n, readAt: new Date().toISOString() } : n
-        )
-      )
-      return { previous, queryKey }
+          n.id === notificationId
+            ? { ...n, readAt: new Date().toISOString() }
+            : n,
+        ),
+      );
+      return { previous, queryKey };
     },
     onError: (_err, _id, context) => {
-      if (context?.previous) queryClient.setQueryData(context.queryKey, context.previous)
+      if (context?.previous)
+        queryClient.setQueryData(context.queryKey, context.previous);
     },
-  })
+  });
 }
 
 export function useMarkAllRead() {
-  const activeOrgId = useOrgStore((s) => s.activeOrgId)
-  const queryClient = useQueryClient()
+  const activeOrgId = useOrgStore((s) => s.activeOrgId);
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: () =>
@@ -62,8 +73,12 @@ export function useMarkAllRead() {
     onSuccess: () => {
       queryClient.setQueryData<Notification[]>(
         ["notifications", activeOrgId],
-        (old) => (old ?? []).map((n) => ({ ...n, readAt: n.readAt ?? new Date().toISOString() }))
-      )
+        (old) =>
+          (old ?? []).map((n) => ({
+            ...n,
+            readAt: n.readAt ?? new Date().toISOString(),
+          })),
+      );
     },
-  })
+  });
 }
