@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+/*
+  Pulso Design Tokens
+  Fonte: Product Direction doc.
+  Tudo aqui vira utilities do Tailwind automaticamente (bg-background, text-primary, etc)
+  porque estamos usando @theme — é a forma v4 de declarar o "design system".
+*/
+@theme {
+  /* Cor primária — Pulse Red. Energia, não é vermelho de erro. */
+  --color-pulse: #D9485F;
+  --color-pulse-foreground: #F5F5F7;
+
+  /* Superfícies — do mais escuro (fundo) ao mais claro (cards) */
+  --color-background: #0B0B0D;
+  --color-surface: #151518;
+  --color-border: #26262B;
+
+  /* Texto */
+  --color-foreground: #F5F5F7;
+  --color-muted-foreground: #A1A1AA;
+
+  /* Estados semânticos */
+  --color-success: #3DD68C;
+  --color-warning: #F5B942;
+  --color-info: #5DA9FF;
+
+  /* Gradiente de marca — usado em CTAs principais e elementos de destaque */
+  --gradient-pulse: linear-gradient(135deg, #D9485F 0%, #A83EF0 100%);
+
+  /* Fonte — Inter é a escolha óbvia pra esse clima Linear/Apple */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Radius consistente em todo o app — soft, não "pill" demais, não quadrado */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Utility de gradiente — Tailwind v4 não tem bg-gradient custom out of the box
+   pra valores arbitrários complexos, então declaramos como classe utilitária */
+@utility bg-gradient-pulse {
+  background-image: var(--gradient-pulse);
+}
