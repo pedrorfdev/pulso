@@ -1,122 +1,137 @@
-import { Link } from "@tanstack/react-router"
-import { useUpcomingEvents } from "@/features/events/hooks/use-upcoming-events"
-import { useOrgMembers } from "@/features/organizations/hooks/use-org-members"
-import { useMyRole } from "@/shared/hooks/use-my-role"
-import { EventHeroCard } from "@/features/events/components/event-hero-card"
-import { UpcomingEventsList } from "@/features/events/components/upcoming-events-list"
+import { Link } from "@tanstack/react-router";
+import { useUpcomingEvents } from "@/features/events/hooks/use-upcoming-events";
+import { useMyRole } from "@/shared/hooks/use-my-role";
+import { EventHeroCard } from "@/features/events/components/event-hero-card";
 
 export function DashboardPage() {
-  const { data: events, isLoading: loadingEvents } = useUpcomingEvents()
-  const { data: members, isLoading: loadingMembers } = useOrgMembers()
-  const { isLeader } = useMyRole()
+  const { data: events, isLoading } = useUpcomingEvents();
+  const { isLeader } = useMyRole();
 
-  const [nextEvent, ...restEvents] = events ?? []
+  const [nextEvent, ...restEvents] = events ?? [];
 
   return (
-    <div className="flex flex-col gap-6 p-4">
+    <div className="flex flex-col gap-5 p-4 pb-24">
+      {/* Botão "Novo evento" — ação rápida do líder, topo da página */}
+      {isLeader && (
+        <Link
+          to="/events/new"
+          className="flex items-center justify-between rounded-2xl bg-gradient-pulse p-4 shadow-lg shadow-pulse/20 active:scale-[0.98] transition-transform"
+        >
+          <div>
+            <p className="text-xs font-medium text-white/70">Líder</p>
+            <p className="text-lg font-semibold text-white">
+              Criar novo evento
+            </p>
+          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path
+                d="M10 4v12M4 10h12"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+        </Link>
+      )}
+
       {/* Hero card do próximo evento */}
-      {loadingEvents ? (
+      {isLoading ? (
         <DashboardSkeleton />
       ) : nextEvent ? (
         <EventHeroCard event={nextEvent} />
       ) : (
-        <EmptyDashboard isLeader={isLeader} />
+        <EmptyDashboard />
       )}
 
-      {/* Lista dos próximos eventos */}
-      {restEvents.length > 0 && <UpcomingEventsList events={restEvents} />}
-
-      {/* Cards de membros da equipe */}
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">Equipe</p>
-          {isLeader && (
-            <Link to="/events/new" className="text-sm text-pulse hover:text-pulse/80">
-              + novo evento
-            </Link>
-          )}
-        </div>
-
-        {loadingMembers ? (
-          <div className="grid grid-cols-2 gap-2">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-16 animate-pulse rounded-xl bg-surface" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-2">
-            {(members ?? []).map((member) => (
-              <div key={member.id} className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-3">
-                {member.user.avatar_url ? (
-                  <img
-                    src={member.user.avatar_url}
-                    alt={member.user.name}
-                    className="h-8 w-8 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-pulse text-xs font-semibold text-white">
-                    {initials(member.nickname ?? member.user.name)}
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-foreground">
-                    {member.nickname ?? member.user.name.split(" ")[0]}
+      {/* Próximos eventos */}
+      {restEvents.length > 0 && (
+        <section>
+          <p className="mb-2 text-sm text-muted-foreground">Próximos eventos</p>
+          <div className="flex flex-col gap-2">
+            {restEvents.map((event) => (
+              <div
+                key={event.id}
+                className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3"
+              >
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {event.title}
                   </p>
-                  <p className="text-xs text-muted-foreground">{roleLabel(member.role)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatShortDate(event.starts_at)}
+                  </p>
                 </div>
+                {isLeader && (
+                  <Link
+                    to="/events/$eventId/manage"
+                    params={{ eventId: event.id }}
+                    className="text-xs text-pulse"
+                  >
+                    gerenciar
+                  </Link>
+                )}
               </div>
             ))}
           </div>
-        )}
+        </section>
+      )}
+
+      {/* Equipe — link pra página dedicada */}
+      <section>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm text-muted-foreground">Equipe</p>
+          <Link to="/team" className="text-xs text-pulse">
+            ver todos
+          </Link>
+        </div>
+        <Link
+          to="/team"
+          className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3 active:bg-border/40 transition-colors"
+        >
+          <p className="text-sm text-foreground">Ver membros do grupo</p>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M6 4l4 4-4 4"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-muted-foreground"
+            />
+          </svg>
+        </Link>
       </section>
     </div>
-  )
+  );
 }
 
-function EmptyDashboard({ isLeader }: { isLeader: boolean }) {
+function EmptyDashboard() {
   return (
     <div className="rounded-2xl border border-border bg-surface p-6 text-center">
-      <p className="font-medium text-foreground">Nenhum evento por aqui ainda.</p>
-      <p className="mt-1 text-sm text-muted-foreground">
-        {isLeader
-          ? "Crie um evento pra começar."
-          : "Quando a liderança publicar uma escala, ela aparece aqui."}
+      <p className="font-medium text-foreground">
+        Nenhum evento por aqui ainda.
       </p>
-      <div className="mt-4 flex flex-col gap-2">
-        {isLeader && (
-          <Link
-            to="/events/new"
-            className="rounded-xl bg-gradient-pulse py-3 text-sm font-medium text-white"
-          >
-            Criar evento
-          </Link>
-        )}
-        <Link
-          to="/create-organization"
-          className="rounded-xl border border-border py-3 text-sm text-muted-foreground"
-        >
-          Criar outro grupo
-        </Link>
-      </div>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Quando a liderança publicar uma escala, ela aparece aqui.
+      </p>
     </div>
-  )
+  );
 }
 
 function DashboardSkeleton() {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <div className="h-52 animate-pulse rounded-2xl bg-surface" />
-      <div className="h-16 animate-pulse rounded-xl bg-surface" />
     </div>
-  )
+  );
 }
 
-function initials(name: string): string {
-  return name.split(" ").slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("")
-}
-
-function roleLabel(role: string): string {
-  if (role === "ADMIN") return "Admin"
-  if (role === "LEADER") return "Líder"
-  return "Membro"
+function formatShortDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("pt-BR", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+  });
 }
