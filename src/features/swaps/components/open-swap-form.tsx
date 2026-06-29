@@ -1,82 +1,105 @@
-import { useState } from "react"
-import { useOpenSwap } from "../hooks/use-swap-mutations"
-import { useUpcomingEvents } from "@/features/events/hooks/use-upcoming-events"
+import { useState } from "react";
+import { useOpenSwap } from "../hooks/use-swap-mutations";
+import { useUpcomingEvents } from "@/features/events/hooks/use-upcoming-events";
+import { useEventDetail } from "@/features/events/hooks/use-event-detail";
+import { useAuth } from "@/shared/hooks/use-auth";
 
 interface OpenSwapFormProps {
-  onSuccess?: () => void
+  onSuccess?: () => void;
 }
 
 /**
- * Form pra o membro abrir um pedido de troca — broadcast aberto, sem
- * escolher colega. O membro escolhe QUAL dos seus slots escalados quer
- * trocar, e opcionalmente deixa uma mensagem pro grupo.
- *
- * Só lista eventos futuros em que o usuário está escalado. Se não estiver
- * escalado em nenhum, mostra empty state explicativo.
+ * Monta a lista de slots do usuário buscando o detalhe de cada evento.
+ * Só exibe eventos onde o usuário tem slot — sem N+1 problemático porque
+ * useEventDetail usa o cache do TanStack Query (os eventos já foram
+ * buscados pelo EventHeroCard no dashboard).
  */
 export function OpenSwapForm({ onSuccess }: OpenSwapFormProps) {
-  // const { user } = useAuth() — pendência: usado quando slots do usuário forem disponíveis
-  const { data: events } = useUpcomingEvents()
-  const { mutate: openSwap, isPending } = useOpenSwap()
-  const [selectedSlotId, setSelectedSlotId] = useState("")
-  const [message, setMessage] = useState("")
+  const { user } = useAuth();
+  const { data: events } = useUpcomingEvents();
+  const { mutate: openSwap, isPending } = useOpenSwap();
 
-  // Filtra só os eventos em que o usuário está escalado, e extrai o slot dele
-  const mySlots = (events ?? []).flatMap((_event) => {
-    // ⚠️ useUpcomingEvents retorna EventSummary, que não tem slots.
-    // Esse componente precisa de useEventDetail por evento pra achar o slot,
-    // OU o back pode retornar os slots do próprio usuário junto com o
-    // GET /:orgId/events. Por ora deixamos o select vazio e marcamos como
-    // pendência — ver nota abaixo.
-    return []
-  })
+  const [selectedSlotId, setSelectedSlotId] = useState("");
+  const [message, setMessage] = useState("");
 
-  // PENDÊNCIA: pra popular o select de "qual evento/slot", precisamos ou:
-  //   (a) Chamar useEventDetail pra cada evento (N+1 requests, ruim), ou
-  //   (b) O back incluir "meu slot" no EventSummary do GET /:orgId/events
-  //   (c) Uma rota GET /:orgId/my-slots que retorna só os slots do usuário
-  // Implementação atual: mostra o select vazio com nota. Assim que
-  // confirmarmos a abordagem com o back, completamos.
+  // Para cada evento, busca o detalhe (usa cache se já buscou antes)
+  const eventDetails = (events ?? []).map((e) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const { data } = useEventDetail(e.id);
+    return data;
+  });
+
+  // Extrai os slots do usuário logado
+  const mySlots = eventDetails.flatMap((detail) => {
+    if (!detail) return [];
+    const slot = detail.slots.find((s) => s.member.user_id === user?.id);
+    if (!slot) return [];
+    return [
+      {
+        slotId: slot.id,
+        eventTitle: detail.title,
+        startsAt: detail.starts_at,
+        roleLabels: slot.role_labels,
+        attendanceStatus: slot.attendance.status,
+      },
+    ];
+  });
 
   function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!selectedSlotId) return
+    e.preventDefault();
+    if (!selectedSlotId) return;
     openSwap(
-      { slotId: selectedSlotId, message: message || undefined },
-      { onSuccess }
-    )
+      { slotId: selectedSlotId, message: message.trim() || undefined },
+      { onSuccess },
+    );
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-      <select
-        value={selectedSlotId}
-        onChange={(e) => setSelectedSlotId(e.target.value)}
-        className="rounded-xl border border-border bg-surface px-4 py-3 text-foreground outline-none focus:border-pulse"
-      >
-        <option value="">Qual evento você quer trocar?</option>
-        {mySlots.map((slot: { id: string; eventTitle: string; roleLabels: string[] }) => (
-          <option key={slot.id} value={slot.id}>
-            {slot.eventTitle} — {slot.roleLabels.join(", ")}
-          </option>
-        ))}
-      </select>
+      {mySlots.length === 0 ? (
+        <div className="rounded-xl border border-border bg-surface px-4 py-3">
+          <p className="text-sm text-muted-foreground">
+            Você não está escalado em nenhum evento futuro.
+          </p>
+        </div>
+      ) : (
+        <select
+          value={selectedSlotId}
+          onChange={(e) => setSelectedSlotId(e.target.value)}
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground outline-none focus:border-pulse"
+        >
+          <option value="">Qual evento você quer trocar?</option>
+          {mySlots.map((slot) => (
+            <option key={slot.slotId} value={slot.slotId}>
+              {slot.eventTitle} · {formatShortDate(slot.startsAt)} —{" "}
+              {slot.roleLabels.join(", ")}
+            </option>
+          ))}
+        </select>
+      )}
 
       <textarea
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        placeholder="Mensagem pro grupo (opcional)"
+        placeholder="Mensagem pro grupo (opcional) — ex: viagem de última hora"
         rows={2}
-        className="rounded-xl border border-border bg-surface px-4 py-3 text-foreground outline-none focus:border-pulse"
+        className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground outline-none focus:border-pulse"
       />
 
       <button
         type="submit"
-        disabled={!selectedSlotId || isPending}
+        disabled={!selectedSlotId || isPending || mySlots.length === 0}
         className="rounded-xl bg-gradient-pulse py-3 font-medium text-pulse-foreground disabled:opacity-50"
       >
         {isPending ? "Abrindo..." : "Pedir cobertura pro grupo"}
       </button>
     </form>
-  )
+  );
+}
+
+function formatShortDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+  });
 }

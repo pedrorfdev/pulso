@@ -1,8 +1,7 @@
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useOrgMembers } from "@/features/organizations/hooks/use-org-members";
-import { useNavigate } from "@tanstack/react-router";
-import type { OrgRole } from "@/types/enums";
 
-const ROLE_LABEL: Record<OrgRole, string> = {
+const ROLE_LABEL: Record<string, string> = {
   ADMIN: "Admin",
   LEADER: "Líder",
   MEMBER: "Membro",
@@ -22,7 +21,10 @@ export function TeamPage() {
 
   const sorted = [...(members ?? [])].sort((a, b) => {
     const order = { ADMIN: 0, LEADER: 1, MEMBER: 2 };
-    return order[a.role] - order[b.role];
+    return (
+      (order[a.role as keyof typeof order] ?? 3) -
+      (order[b.role as keyof typeof order] ?? 3)
+    );
   });
 
   return (
@@ -60,18 +62,18 @@ export function TeamPage() {
         </div>
       )}
 
-      {!isLoading && sorted.length === 0 && (
-        <p className="text-sm text-muted-foreground">Nenhum membro ainda.</p>
-      )}
-
       <div className="flex flex-col gap-2">
         {sorted.map((member) => {
           const displayName = member.nickname ?? member.user.name;
+          const isLeaderOrAdmin =
+            member.role === "ADMIN" || member.role === "LEADER";
 
           return (
-            <div
+            <Link
               key={member.id}
-              className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3"
+              to="/team/$memberId/profile"
+              params={{ memberId: member.id } as Record<string, string>}
+              className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 transition hover:border-pulse/30 active:bg-border/30"
             >
               {/* Avatar */}
               {member.user.avatar_url ? (
@@ -96,17 +98,34 @@ export function TeamPage() {
                 </p>
               </div>
 
-              {/* Role badge */}
-              <span
-                className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                  member.role === "ADMIN" || member.role === "LEADER"
-                    ? "bg-pulse/10 text-pulse"
-                    : "bg-border text-muted-foreground"
-                }`}
-              >
-                {ROLE_LABEL[member.role]}
-              </span>
-            </div>
+              {/* Role badge + seta */}
+              <div className="flex shrink-0 items-center gap-2">
+                <span
+                  className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                    isLeaderOrAdmin
+                      ? "bg-pulse/10 text-pulse"
+                      : "bg-border text-muted-foreground"
+                  }`}
+                >
+                  {ROLE_LABEL[member.role] ?? member.role}
+                </span>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  className="text-border"
+                >
+                  <path
+                    d="M5 3l4 4-4 4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            </Link>
           );
         })}
       </div>
