@@ -99,7 +99,7 @@ export function AddSlotForm({
           <optgroup label="Já escalados (segunda função)">
             {existingSlots.map((slot) => (
               <option key={slot.member.id} value={slot.member.id}>
-                {slot.member.name} ({slot.role_labels.join(", ")})
+                {slot.member.user.name} ({slot.role_labels.join(", ")})
               </option>
             ))}
           </optgroup>
@@ -136,7 +136,7 @@ export function AddSlotForm({
                     className={`h-1.5 w-1.5 rounded-full ${
                       roleLabel === preset ? "bg-pulse" : "bg-warning"
                     }`}
-                    title={occupied.map((s) => s.member.name).join(", ")}
+                    title={occupied.map((s) => s.member.user.name).join(", ")}
                   />
                 )}
               </button>
@@ -162,7 +162,7 @@ export function AddSlotForm({
         {membersInRole.length > 0 && !showCustom && roleLabel && (
           <p className="mt-1.5 text-xs text-muted-foreground">
             Já em <span className="text-foreground">{roleLabel}</span>:{" "}
-            {membersInRole.map((s) => s.member.name).join(", ")}
+            {membersInRole.map((s) => s.member.user.name).join(", ")}
           </p>
         )}
 
@@ -192,7 +192,7 @@ export function AddSlotForm({
       {confirmOpen && memberAlreadyInSlot && (
         <div className="rounded-xl border border-warning/30 bg-warning/5 p-4">
           <p className="text-sm font-medium text-foreground">
-            {memberAlreadyInSlot.member.name} já está como{" "}
+            {memberAlreadyInSlot.member.user.name} já está como{" "}
             <span className="text-warning">
               {memberAlreadyInSlot.role_labels.join(", ")}
             </span>

@@ -39,7 +39,6 @@ function initials(name?: string | null): string {
 export function AttendanceStatusList({ slots }: AttendanceStatusListProps) {
   if (slots.length === 0) return null;
 
-  // Ordem: confirmados → pendentes → recusados → expirados
   const order = ["CONFIRMED", "PENDING", "DECLINED", "DEADLINE_MISSED"];
   const sorted = [...slots].sort(
     (a, b) =>
@@ -55,7 +54,7 @@ export function AttendanceStatusList({ slots }: AttendanceStatusListProps) {
         const config =
           STATUS_CONFIG[slot.attendance.status as keyof typeof STATUS_CONFIG] ??
           STATUS_CONFIG.PENDING;
-        const name = slot.member.name;
+        const name = slot.member.user.name;
         const role = slot.role_labels.join(", ");
 
         return (
@@ -63,10 +62,9 @@ export function AttendanceStatusList({ slots }: AttendanceStatusListProps) {
             key={slot.id}
             className="flex items-center gap-3 rounded-xl border border-border bg-background px-3 py-2.5"
           >
-            {/* Avatar */}
-            {slot.member.avatar_url ? (
+            {slot.member.user.avatar_url ? (
               <img
-                src={slot.member.avatar_url}
+                src={slot.member.user.avatar_url}
                 alt={name}
                 className="h-9 w-9 shrink-0 rounded-full object-cover"
               />
@@ -76,17 +74,15 @@ export function AttendanceStatusList({ slots }: AttendanceStatusListProps) {
               </div>
             )}
 
-            {/* Nome + função */}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">
-                {name ?? "—"}
+                {name}
               </p>
               {role && (
                 <p className="text-xs text-muted-foreground truncate">{role}</p>
               )}
             </div>
 
-            {/* Badge de status */}
             <span
               className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${config.badge}`}
             >
