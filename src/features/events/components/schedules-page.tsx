@@ -3,11 +3,6 @@ import { useUpcomingEvents } from "@/features/events/hooks/use-upcoming-events";
 import { useMyRole } from "@/shared/hooks/use-my-role";
 import type { EventSummary } from "@/features/events/types";
 
-const STATUS_COLORS: Record<string, string> = {
-  published: "text-success",
-  draft: "text-warning",
-};
-
 export function SchedulesPage() {
   const navigate = useNavigate();
   const { data: events, isLoading } = useUpcomingEvents();
@@ -123,7 +118,7 @@ function EventList({
             {!event.is_published && (
               <span className="text-xs text-warning">rascunho</span>
             )}
-            {isLeader && !isPast && (
+            {isLeader && !isPast ? (
               <Link
                 to="/events/$eventId/manage"
                 params={{ eventId: event.id }}
@@ -131,7 +126,15 @@ function EventList({
               >
                 gerenciar
               </Link>
-            )}
+            ) : event.is_published ? (
+              <Link
+                to="/events/$eventId/view"
+                params={{ eventId: event.id }}
+                className="text-xs text-pulse"
+              >
+                ver
+              </Link>
+            ) : null}
           </div>
         </div>
       ))}

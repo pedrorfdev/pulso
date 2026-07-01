@@ -32,7 +32,7 @@ export function OpenSwapForm({ onSuccess }: OpenSwapFormProps) {
   // Extrai os slots do usuário logado
   const mySlots = eventDetails.flatMap((detail) => {
     if (!detail) return [];
-    const slot = detail.slots.find((s) => s.member.user_id === user?.id);
+    const slot = detail.slots.find((s) => s.member.user.id === user?.id);
     if (!slot) return [];
     return [
       {
