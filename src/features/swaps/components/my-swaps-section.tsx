@@ -27,7 +27,7 @@ export function MySwapsSection() {
   return (
     <div className="flex flex-col gap-3">
       {mySwaps.map((swap) => {
-        const isRequester = swap.requesterSlot.member.userId === user?.id;
+        const isRequester = swap.requester.member.id === user?.id;
         return (
           <MySwapCard key={swap.id} swap={swap} isRequester={isRequester} />
         );
@@ -48,14 +48,13 @@ function MySwapCard({
   const { mutate: volunteerReject, isPending: rejecting } =
     useVolunteerReject();
 
-  // O slot relevante muda dependendo do papel: quem pediu vê o próprio slot,
-  // quem vai cobrir vê o slot da pessoa que pediu.
-  const primarySlot = swap.requesterSlot;
-  const coverSlot = swap.volunteerSlot;
+  const event = swap.requester.event;
+  const requesterName = swap.requester.member.user.name;
+  const volunteerName = swap.volunteer?.member.user.name;
 
   return (
     <div className="rounded-xl border border-border bg-surface overflow-hidden">
-      {/* Faixa do evento — contexto visual imediato */}
+      {/* Faixa do evento */}
       <div className="flex items-center gap-2 border-b border-border bg-background px-4 py-2">
         <svg
           width="12"
@@ -81,17 +80,16 @@ function MySwapCard({
           />
         </svg>
         <p className="text-xs font-medium text-muted-foreground">
-          {primarySlot.event.title} ·{" "}
-          {formatShortDate(primarySlot.event.startsAt)}
+          {event.title} · {formatShortDate(event.starts_at)}
         </p>
       </div>
 
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
-          <div>
-            {/* Função em jogo */}
+          <div className="min-w-0">
+            {/* Funções em jogo */}
             <div className="flex flex-wrap gap-1 mb-1">
-              {primarySlot.roleLabels.map((label) => (
+              {swap.requester.role_labels.map((label) => (
                 <span
                   key={label}
                   className="rounded-full bg-border px-2 py-0.5 text-xs text-foreground"
@@ -101,26 +99,23 @@ function MySwapCard({
               ))}
             </div>
 
-            {/* Papel do usuário nessa troca */}
             <p className="text-sm text-muted-foreground">
               {isRequester
                 ? "Você pediu cobertura"
-                : `Você vai cobrir ${primarySlot.member.name}`}
+                : `${requesterName} pediu cobertura`}
             </p>
 
-            {/* Estado do voluntário */}
-            {coverSlot && (
-              <p className="mt-1 text-xs text-muted-foreground">
+            {swap.volunteer && (
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 {isRequester
-                  ? `${coverSlot.member.name} topou · aguardando líder`
-                  : "Aguardando aprovação do líder"}
+                  ? `${volunteerName} topou · aguardando líder`
+                  : "Você aceitou · aguardando líder"}
               </p>
             )}
 
-            {/* Motivo de rejeição do líder */}
-            {swap.rejectionReason && (
+            {swap.rejection_reason && (
               <p className="mt-1 text-xs italic text-muted-foreground">
-                Líder: "{swap.rejectionReason}"
+                Líder: "{swap.rejection_reason}"
               </p>
             )}
           </div>
@@ -128,20 +123,19 @@ function MySwapCard({
           <SwapStatusBadge status={swap.status} />
         </div>
 
-        {/* Mensagem do solicitante */}
         {swap.message && (
           <p className="mt-2 text-sm italic text-muted-foreground">
             "{swap.message}"
           </p>
         )}
 
-        {/* Ação: solicitante pode cancelar enquanto aberto */}
+        {/* Solicitante cancela enquanto aberto */}
         {isRequester && swap.status === "PENDING_OPEN" && (
           <>
             {!showCancelConfirm ? (
               <button
                 onClick={() => setShowCancelConfirm(true)}
-                className="mt-3 text-sm text-muted-foreground underline-offset-2 hover:text-pulse hover:underline"
+                className="mt-3 text-sm text-muted-foreground hover:text-pulse"
               >
                 Cancelar pedido
               </button>
@@ -158,21 +152,21 @@ function MySwapCard({
                   disabled={cancelling}
                   className="flex-1 rounded-xl bg-pulse py-2 text-sm font-medium text-white disabled:opacity-50"
                 >
-                  {cancelling ? "Cancelando..." : "Confirmar"}
+                  {cancelling ? "..." : "Sim, cancelar"}
                 </button>
               </div>
             )}
           </>
         )}
 
-        {/* Ação: voluntário pode desistir antes do líder aprovar */}
+        {/* Voluntário desiste antes do líder aprovar */}
         {!isRequester && swap.status === "PENDING_LEADER" && (
           <button
             onClick={() => volunteerReject({ swapId: swap.id })}
             disabled={rejecting}
-            className="mt-3 text-sm text-muted-foreground underline-offset-2 hover:text-pulse hover:underline disabled:opacity-50"
+            className="mt-3 text-sm text-muted-foreground hover:text-pulse disabled:opacity-50"
           >
-            {rejecting ? "Desistindo..." : "Desistir da cobertura"}
+            {rejecting ? "..." : "Desistir da cobertura"}
           </button>
         )}
       </div>
@@ -182,8 +176,8 @@ function MySwapCard({
 
 function formatShortDate(iso: string): string {
   return new Date(iso).toLocaleDateString("pt-BR", {
-    weekday: "short",
     day: "2-digit",
     month: "short",
+    weekday: "short",
   });
 }
