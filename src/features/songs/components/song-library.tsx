@@ -70,7 +70,6 @@ export function SongLibrary() {
           <TabButton
             active={mode === "spotify"}
             onClick={() => setMode("spotify")}
-            last
           >
             <span className="flex items-center gap-1.5">
               <SpotifyIcon />
@@ -267,13 +266,11 @@ function TabButton({
   onClick,
   children,
   first,
-  last,
 }: {
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
   first?: boolean;
-  last?: boolean;
 }) {
   return (
     <button

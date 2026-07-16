@@ -1,4 +1,4 @@
-import { Link, useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { useEventDetail } from "../hooks/use-event-detail";
 import { useAttendanceRealtime } from "../hooks/use-attendance-realtime";
 import { useAuth } from "@/shared/hooks/use-auth";
@@ -83,29 +83,7 @@ export function EventViewPage() {
         <EventSongsList eventId={event.id} canEdit={false} />
       </section>
 
-      {/* Tech check — link em modo leitura, qualquer membro pode entrar */}
-      <Link
-        to="/events/$eventId/tech-check"
-        params={{ eventId: event.id }}
-        className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3 transition hover:border-pulse/30"
-      >
-        <p className="text-sm text-foreground">Ver tech check</p>
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 14 14"
-          fill="none"
-          className="text-muted-foreground"
-        >
-          <path
-            d="M5 3l4 4-4 4"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </Link>
+
     </div>
   );
 }

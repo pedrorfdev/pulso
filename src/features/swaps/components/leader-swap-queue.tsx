@@ -43,9 +43,9 @@ function LeaderSwapCard({ swap }: { swap: Swap }) {
   const [showRejectForm, setShowRejectForm] = useState(false)
   const { mutate: review, isPending } = useLeaderReviewSwap()
 
-  const event = swap.requesterSlot.event
-  const requester = swap.requesterSlot.member
-  const volunteer = swap.volunteerSlot?.member
+  const event = swap.requester.event
+  const requester = swap.requester.member
+  const volunteer = swap.volunteer?.member
 
   function handleApprove() {
     review({ swapId: swap.id, action: "APPROVE" })
@@ -64,17 +64,17 @@ function LeaderSwapCard({ swap }: { swap: Swap }) {
     <div className="rounded-xl border border-border bg-surface p-4">
       <p className="text-sm font-medium text-foreground">{event.title}</p>
       <p className="text-sm text-muted-foreground">
-        {formatShortDate(event.startsAt)}
+        {formatShortDate(event.starts_at)}
       </p>
 
       <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-        <span className="text-foreground">{requester.name}</span>
+        <span className="text-foreground">{requester.user.name}</span>
         <span>→</span>
-        <span className="text-foreground">{volunteer?.name ?? "?"}</span>
+        <span className="text-foreground">{volunteer?.user?.name ?? "?"}</span>
       </div>
 
       <div className="mt-1 flex flex-wrap gap-1">
-        {swap.requesterSlot.roleLabels.map((label) => (
+        {swap.requester.role_labels.map((label: string) => (
           <span
             key={label}
             className="rounded-full bg-border px-2 py-0.5 text-xs text-muted-foreground"

@@ -22,7 +22,7 @@ export function OpenSwapsSection() {
   const myMember = members?.find((m) => m.user.id === user?.id)
 
   const openSwaps = (swaps ?? []).filter(
-    (s) => s.requesterSlot.member.userId !== user?.id
+    (s) => s.requester?.member?.id !== myMember?.id
   )
 
   if (isLoading) {
@@ -62,8 +62,8 @@ function OpenSwapCard({
   const [showConfirm, setShowConfirm] = useState(false)
   const { mutate: volunteer, isPending } = useVolunteerForSwap()
 
-  const event = swap.requesterSlot.event
-  const requester = swap.requesterSlot.member
+  const event = swap.requester?.event
+  const requester = swap.requester?.member?.user
 
   function handleVolunteer() {
     if (!myMemberId) return
@@ -82,15 +82,15 @@ function OpenSwapCard({
     <div className="rounded-xl border border-border bg-surface p-4">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-sm font-medium text-foreground">{event.title}</p>
+          <p className="text-sm font-medium text-foreground">{event?.title}</p>
           <p className="text-sm text-muted-foreground">
-            {formatShortDate(event.startsAt)}
+            {event ? formatShortDate(event.starts_at) : ""}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {requester.name} precisa de cobertura
+            {requester?.name ?? "Alguém"} precisa de cobertura
           </p>
           <div className="mt-1 flex flex-wrap gap-1">
-            {swap.requesterSlot.roleLabels.map((label) => (
+            {swap.requester?.role_labels?.map((label: string) => (
               <span
                 key={label}
                 className="rounded-full bg-border px-2 py-0.5 text-xs text-muted-foreground"

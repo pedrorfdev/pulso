@@ -1,8 +1,6 @@
 import Dexie, { type Table } from "dexie"
 import type { EventDetail } from "@/features/events/types"
 import type { Song } from "@/features/songs/types"
-import type { TechCheckItem } from "@/features/tech-check/types"
-
 /**
  * Banco local IndexedDB via Dexie.
  *
@@ -14,9 +12,6 @@ import type { TechCheckItem } from "@/features/tech-check/types"
  *
  *   songs    → repertório do evento precisa estar disponível sem rede.
  *              Músico abre o app no palco sem sinal (situação real).
- *
- *   techCheck → checklist de equipamentos precisa estar acessível no
- *               momento da montagem, que frequentemente é sem wifi.
  *
  * O que NÃO cacheamos:
  *   swaps, stats, notifications → dados que mudam frequentemente e
@@ -30,7 +25,6 @@ import type { TechCheckItem } from "@/features/tech-check/types"
 class PulsoDB extends Dexie {
   events!: Table<EventDetail & { orgId: string; cachedAt: number }>
   songs!: Table<Song & { orgId: string; cachedAt: number }>
-  techCheck!: Table<{ eventId: string; orgId: string; items: TechCheckItem[]; cachedAt: number }>
 
   constructor() {
     super("pulso-offline")
@@ -39,7 +33,6 @@ class PulsoDB extends Dexie {
       // índices: chave primária + campos buscáveis
       events: "id, orgId, cachedAt",
       songs: "id, orgId, cachedAt",
-      techCheck: "eventId, orgId, cachedAt",
     })
   }
 }

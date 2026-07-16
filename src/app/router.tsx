@@ -16,7 +16,6 @@ import { ManageEventPage } from "@/features/events/components/manage-event-page"
 import { EventViewPage } from "@/features/events/components/event-view-page";
 import { SwapsPage } from "@/features/swaps/components/swaps-page";
 import { SongLibrary } from "@/features/songs/components/song-library";
-import { TechCheckPage } from "@/features/tech-check/components/tech-check-page";
 import { OrgStatsPage } from "@/features/stats/components/org-stats-page";
 import { NotificationsPage } from "@/features/notifications/components/notifications-page";
 import { TeamPage } from "@/features/organizations/components/team-page";
@@ -106,15 +105,7 @@ const manageEventRoute = createRoute({
     </AuthGuard>
   ),
 });
-const techCheckRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/events/$eventId/tech-check",
-  component: () => (
-    <AuthGuard>
-      <TechCheckPage />
-    </AuthGuard>
-  ),
-});
+
 const eventViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/events/$eventId/view",
@@ -212,7 +203,6 @@ const routeTree = rootRoute.addChildren([
   dashboardRoute,
   createEventRoute,
   manageEventRoute,
-  techCheckRoute,
   eventViewRoute,
   swapsRoute,
   songsRoute,
