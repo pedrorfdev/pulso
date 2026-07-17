@@ -10,6 +10,7 @@ export function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-sm">
       <div className="flex items-center justify-around px-2 py-2 pb-safe">
         <NavItem to="/dashboard" label="Início" icon={<HomeIcon />} />
+        <NavItem to="/schedules" label="Escalas" icon={<CalendarIcon />} />
         <NavItem to="/swaps" label="Trocas" icon={<SwapIcon />} />
         <NavItem to="/songs" label="Louvores" icon={<MusicIcon />} />
         {isLeader && <NavItem to="/stats" label="Stats" icon={<StatsIcon />} />}
@@ -45,7 +46,7 @@ function NavItem({
   return (
     <Link
       to={to}
-      className="flex flex-col items-center gap-1 px-3 py-1 text-muted-foreground transition-colors [&.active]:text-pulse"
+      className="flex flex-col items-center gap-1 px-2 py-1 text-muted-foreground transition-colors [&.active]:text-pulse"
       activeProps={{ className: "active" }}
     >
       <div className="h-6 w-6">{icon}</div>
@@ -64,6 +65,20 @@ function HomeIcon() {
     >
       <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
       <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+    >
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
     </svg>
   );
 }
