@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useUnreadCount } from "@/features/notifications/hooks/use-notifications";
 import { useMyRole } from "@/shared/hooks/use-my-role";
+import { Home, Calendar, Music, Bell, User, Users } from "lucide-react";
 
 export function BottomNav() {
   const unreadCount = useUnreadCount();
@@ -9,17 +10,18 @@ export function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-sm">
       <div className="flex items-center justify-around px-2 py-2 pb-safe">
-        <NavItem to="/dashboard" label="Início" icon={<HomeIcon />} />
-        <NavItem to="/schedules" label="Escalas" icon={<CalendarIcon />} />
+        <NavItem to="/dashboard" label="Início" icon={<Home />} />
+        <NavItem to="/schedules" label="Escalas" icon={<Calendar />} />
         <NavItem to="/swaps" label="Trocas" icon={<SwapIcon />} />
-        <NavItem to="/songs" label="Louvores" icon={<MusicIcon />} />
+        <NavItem to="/songs" label="Louvores" icon={<Music />} />
+        <NavItem to="/team" label="Equipe" icon={<Users />} />
         {isLeader && <NavItem to="/stats" label="Stats" icon={<StatsIcon />} />}
         <NavItem
           to="/notifications"
           label="Avisos"
           icon={
             <div className="relative">
-              <BellIcon />
+              <Bell />
               {unreadCount > 0 && (
                 <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-pulse text-[9px] font-bold text-white">
                   {unreadCount > 9 ? "9+" : unreadCount}
@@ -28,7 +30,7 @@ export function BottomNav() {
             </div>
           }
         />
-        <NavItem to="/profile" label="Perfil" icon={<ProfileIcon />} />
+        <NavItem to="/profile" label="Perfil" icon={<User />} />
       </div>
     </nav>
   );
@@ -52,34 +54,6 @@ function NavItem({
       <div className="h-6 w-6">{icon}</div>
       <span className="text-[10px]">{label}</span>
     </Link>
-  );
-}
-
-function HomeIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-    >
-      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-      <polyline points="9 22 9 12 15 12 15 22" />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-    >
-      <rect x="3" y="4" width="18" height="18" rx="2" />
-      <path d="M16 2v4M8 2v4M3 10h18" />
-    </svg>
   );
 }
 
@@ -120,19 +94,6 @@ function StatsIcon() {
       strokeWidth={1.8}
     >
       <path d="M18 20V10M12 20V4M6 20v-6" />
-    </svg>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-    >
-      <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
     </svg>
   );
 }
