@@ -1,21 +1,45 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useUpcomingEvents } from "@/features/events/hooks/use-upcoming-events";
 import { useEventDetail } from "@/features/events/hooks/use-event-detail";
 import { useMyRole } from "@/shared/hooks/use-my-role";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { EventHeroCard } from "@/features/events/components/event-hero-card";
+import { InviteModal } from "@/features/organizations/components/invite-modal";
 
 export function DashboardPage() {
   const { data: events, isLoading } = useUpcomingEvents();
   const { isLeader } = useMyRole();
+  const [showInvite, setShowInvite] = useState(false);
 
   const [nextEvent, ...restEvents] = events ?? [];
 
   return (
     <div className="flex flex-col gap-5 p-4 pb-24">
-      {/* Ação rápida do líder — canto superior, discreto mas rápido */}
+      {/* Ações rápidas do líder */}
       {isLeader && (
-        <div className="flex justify-end">
+        <div className="flex gap-2 justify-end">
+          <button
+            onClick={() => setShowInvite(true)}
+            className="flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-muted-foreground hover:border-pulse/40 hover:text-foreground transition"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle
+                cx="5.5"
+                cy="4"
+                r="2.5"
+                stroke="currentColor"
+                strokeWidth="1.3"
+              />
+              <path
+                d="M1 12c0-2.5 2-4 4.5-4M10 8v4M8 10h4"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+              />
+            </svg>
+            Convidar
+          </button>
           <Link
             to="/events/new"
             className="flex items-center gap-2 rounded-xl bg-gradient-pulse px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-pulse/30 active:scale-95 transition-transform"
@@ -39,10 +63,10 @@ export function DashboardPage() {
       ) : nextEvent ? (
         <EventHeroCard event={nextEvent} />
       ) : (
-        <EmptyState />
+        <EmptyState isLeader={isLeader} onInvite={() => setShowInvite(true)} />
       )}
 
-      {/* Próximos eventos — cards compactos com função e status */}
+      {/* Grid de próximos eventos */}
       {restEvents.length > 0 && (
         <section>
           <div className="mb-3 flex items-center justify-between">
@@ -65,11 +89,13 @@ export function DashboardPage() {
           </div>
         </section>
       )}
+
+      {/* Modal de convite */}
+      {showInvite && <InviteModal onClose={() => setShowInvite(false)} />}
     </div>
   );
 }
 
-// Card quadrado de evento futuro — mostra a função do usuário naquele evento
 function UpcomingEventCard({
   eventId,
   title,
@@ -126,15 +152,31 @@ function UpcomingEventCard({
   );
 }
 
-function EmptyState() {
+function EmptyState({
+  isLeader,
+  onInvite,
+}: {
+  isLeader: boolean;
+  onInvite: () => void;
+}) {
   return (
     <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
       <p className="font-medium text-foreground">
         Nenhum evento publicado ainda.
       </p>
       <p className="mt-1 text-sm text-muted-foreground">
-        Quando a liderança publicar uma escala, aparece aqui.
+        {isLeader
+          ? "Crie um evento e convide sua equipe."
+          : "Quando a liderança publicar uma escala, aparece aqui."}
       </p>
+      {isLeader && (
+        <button
+          onClick={onInvite}
+          className="mt-4 text-sm text-pulse hover:underline"
+        >
+          Convidar membros →
+        </button>
+      )}
     </div>
   );
 }
