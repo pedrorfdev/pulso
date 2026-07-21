@@ -69,7 +69,7 @@ export function EventHeroCard({ event }: EventHeroCardProps) {
 
         {/* Seta indicando que é clicável */}
         <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
-          <span>Ver detalhes, tech check e louvores</span>
+          <span>Ver detalhes e louvores</span>
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path
               d="M4 2l4 4-4 4"

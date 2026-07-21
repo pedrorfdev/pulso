@@ -1,7 +1,16 @@
 import { Link } from "@tanstack/react-router";
 import { useUnreadCount } from "@/features/notifications/hooks/use-notifications";
 import { useMyRole } from "@/shared/hooks/use-my-role";
-import { Home, Calendar, Music, Bell, User, Users } from "lucide-react";
+import {
+  Home,
+  Calendar,
+  Music,
+  Bell,
+  User,
+  Users,
+  ArrowUpDown,
+  ChartNoAxesColumn,
+} from "lucide-react";
 
 export function BottomNav() {
   const unreadCount = useUnreadCount();
@@ -12,10 +21,12 @@ export function BottomNav() {
       <div className="flex items-center justify-around px-2 py-2 pb-safe">
         <NavItem to="/dashboard" label="Início" icon={<Home />} />
         <NavItem to="/schedules" label="Escalas" icon={<Calendar />} />
-        <NavItem to="/swaps" label="Trocas" icon={<SwapIcon />} />
+        <NavItem to="/swaps" label="Trocas" icon={<ArrowUpDown />} />
         <NavItem to="/songs" label="Louvores" icon={<Music />} />
         <NavItem to="/team" label="Equipe" icon={<Users />} />
-        {isLeader && <NavItem to="/stats" label="Stats" icon={<StatsIcon />} />}
+        {isLeader && (
+          <NavItem to="/stats" label="Stats" icon={<ChartNoAxesColumn />} />
+        )}
         <NavItem
           to="/notifications"
           label="Avisos"
@@ -54,60 +65,5 @@ function NavItem({
       <div className="h-6 w-6">{icon}</div>
       <span className="text-[10px]">{label}</span>
     </Link>
-  );
-}
-
-function SwapIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-    >
-      <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
-    </svg>
-  );
-}
-
-function MusicIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-    >
-      <path d="M9 18V5l12-2v13" />
-      <circle cx="6" cy="18" r="3" />
-      <circle cx="18" cy="16" r="3" />
-    </svg>
-  );
-}
-
-function StatsIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-    >
-      <path d="M18 20V10M12 20V4M6 20v-6" />
-    </svg>
-  );
-}
-
-function ProfileIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-    >
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-    </svg>
   );
 }

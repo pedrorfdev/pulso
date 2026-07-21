@@ -202,26 +202,41 @@ function ScorePill({ score }: { score: number }) {
 
 // ── Row de stats ──────────────────────────────────────────────────────────────
 
-function StatsRow({ stats }: { stats: MemberProfile["stats"] }) {
-  if (!stats) return null;
+// Substitui apenas a função StatsRow dentro do profile-page.tsx
+// Os outros itens (confirmações + faltas) são confiáveis.
+// Swaps_requested e swaps_accepted são removidos porque o back
+// não garante consistência entre os dois campos ainda.
+
+export function StatsRow({
+  stats,
+}: {
+  stats: NonNullable<MemberProfile["stats"]>;
+}) {
+  const totalConfirmed = stats.confirmed_on_time + stats.confirmed_late;
+  const totalSwaps = stats.swaps_requested + stats.swaps_accepted;
 
   const items = [
     {
       label: "Confirmações",
-      value: stats.confirmed_on_time + stats.confirmed_late,
-      color: "text-success",
+      value: totalConfirmed,
+      color: totalConfirmed > 0 ? "text-success" : "text-muted-foreground",
     },
     {
       label: "Faltas",
       value: stats.absences,
-      color: stats.absences > 3 ? "text-pulse" : "text-muted-foreground",
+      color: stats.absences >= 3 ? "text-pulse" : "text-muted-foreground",
     },
     {
-      label: "Trocas pedidas",
-      value: stats.swaps_requested,
+      label: "Sem resposta",
+      value: stats.deadline_misses,
+      color:
+        stats.deadline_misses > 0 ? "text-warning" : "text-muted-foreground",
+    },
+    {
+      label: "Trocas",
+      value: totalSwaps,
       color: "text-info",
     },
-    { label: "Coberturas", value: stats.swaps_accepted, color: "text-info" },
   ];
 
   return (
