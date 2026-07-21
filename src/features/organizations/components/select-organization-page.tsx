@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Navigate, useNavigate, Link } from "@tanstack/react-router";
 import { useOrganizations } from "../hooks/use-organizations";
 import { useOrgStore } from "@/shared/store/org-store";
@@ -5,9 +6,21 @@ import { useOrgStore } from "@/shared/store/org-store";
 export function SelectOrganizationPage() {
   const { data: memberships, isLoading } = useOrganizations();
   const setActiveOrgId = useOrgStore((s) => s.setActiveOrgId);
+  const clearActiveOrgId = useOrgStore((s) => s.clearActiveOrgId);
+  const activeOrgId = useOrgStore((s) => s.activeOrgId);
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(window.location.search);
   const force = searchParams.get("force") === "true";
+
+  const orgs = memberships ?? [];
+
+  // Limpa o activeOrgId se não pertence mais a nenhuma org válida
+  // — evita o bug de ficar preso em org fantasma do localStorage
+  useEffect(() => {
+    if (isLoading || orgs.length === 0) return;
+    const stillValid = orgs.some((m) => m.organization.id === activeOrgId);
+    if (!stillValid) clearActiveOrgId();
+  }, [orgs, activeOrgId, isLoading, clearActiveOrgId]);
 
   if (isLoading) {
     return (
@@ -17,13 +30,9 @@ export function SelectOrganizationPage() {
     );
   }
 
-  const orgs = memberships ?? [];
+  if (orgs.length === 0) return <NoOrganizationsYet />;
 
-  if (orgs.length === 0) {
-    return <NoOrganizationsYet />;
-  }
-
-  // Auto-redireciona se só tem 1 org e não é forçado
+  // Auto-redireciona se só tem 1 org e não está forçado a mostrar a lista
   if (orgs.length === 1 && !force) {
     setActiveOrgId(orgs[0].organization.id);
     return <Navigate to="/dashboard" />;
@@ -48,7 +57,6 @@ export function SelectOrganizationPage() {
           </button>
         ))}
 
-        {/* Criar novo grupo — disponível mesmo tendo outros */}
         <Link
           to="/create-organization"
           className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-border py-3 text-sm text-muted-foreground hover:border-pulse/40 hover:text-foreground transition"
@@ -71,7 +79,6 @@ export function SelectOrganizationPage() {
 function NoOrganizationsYet() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
-      {/* Gradiente decorativo */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-10">
         <div className="h-64 w-64 rounded-full bg-gradient-pulse blur-3xl" />
       </div>
@@ -86,7 +93,6 @@ function NoOrganizationsYet() {
       </div>
 
       <div className="relative flex w-full max-w-xs flex-col gap-3">
-        {/* CTA principal — criar grupo */}
         <Link
           to="/create-organization"
           className="flex items-center justify-center gap-2 rounded-xl bg-gradient-pulse px-6 py-4 font-semibold text-white shadow-lg shadow-pulse/30 active:scale-[0.98] transition-transform"
@@ -101,7 +107,6 @@ function NoOrganizationsYet() {
           </svg>
           Criar um grupo
         </Link>
-
         <p className="text-center text-xs text-muted-foreground">
           ou peça um link de convite pra entrar em um grupo existente
         </p>

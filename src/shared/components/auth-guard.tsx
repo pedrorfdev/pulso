@@ -1,30 +1,34 @@
-import { Navigate } from "@tanstack/react-router"
-import { useAuth } from "@/shared/hooks/use-auth"
-import { AppLayout } from "./app-layout"
+import { Navigate, useLocation } from "@tanstack/react-router";
+import { useAuth } from "@/shared/hooks/use-auth";
+import { AppLayout } from "./app-layout";
 
 interface AuthGuardProps {
-  children: React.ReactNode
-  withLayout?: boolean
+  children: React.ReactNode;
+  withLayout?: boolean;
 }
 
-/**
- * Protege rotas autenticadas. Por padrão envolve em AppLayout
- * (header + bottom nav). Passa withLayout={false} pras telas que
- * têm layout próprio (ex: join, create-org que são full-screen).
- */
 export function AuthGuard({ children, withLayout = true }: AuthGuardProps) {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-muted-foreground">Carregando...</p>
       </div>
-    )
+    );
   }
 
-  if (!isAuthenticated) return <Navigate to="/login" />
+  if (!isAuthenticated) {
+    // Salva a rota atual (incluindo /join/token) antes de ir pro login
+    // O AuthCallbackPage vai ler isso depois do OAuth e redirecionar
+    const currentPath = location.pathname;
+    if (currentPath && currentPath !== "/login") {
+      localStorage.setItem("pulso_redirect_after_login", currentPath);
+    }
+    return <Navigate to="/login" />;
+  }
 
-  if (withLayout) return <AppLayout>{children}</AppLayout>
-  return <>{children}</>
+  if (withLayout) return <AppLayout>{children}</AppLayout>;
+  return <>{children}</>;
 }
