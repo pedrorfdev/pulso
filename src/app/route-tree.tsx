@@ -9,31 +9,40 @@
  * Os componentes importam apenas de @tanstack/react-router, que resolve
  * os tipos a partir do Register global — sem ciclo.
  */
-import { createRootRoute, createRoute } from "@tanstack/react-router";
+import React from "react";
+import { createRootRoute, createRoute, lazyRouteComponent } from "@tanstack/react-router";
 import { RootLayout } from "./root-layout";
 import { AuthGuard } from "@/shared/components/auth-guard";
 
-import { LoginPage } from "@/features/auth/components/login-page";
-import { AuthCallbackPage } from "@/features/auth/components/auth-callback-page";
-import { SelectOrganizationPage } from "@/features/organizations/components/select-organization-page";
-import { JoinOrganizationPage } from "@/features/organizations/components/join-organization-page";
-import { CreateOrganizationPage } from "@/features/organizations/components/create-organization-page";
-import { DashboardPage } from "@/features/dashboard/components/dashboard-page";
-import { CreateEventForm } from "@/features/events/components/create-event-form";
-import { ManageEventPage } from "@/features/events/components/manage-event-page";
-import { EventViewPage } from "@/features/events/components/event-view-page";
-import { SwapsPage } from "@/features/swaps/components/swaps-page";
-import { SongLibrary } from "@/features/songs/components/song-library";
-import { OrgStatsPage } from "@/features/stats/components/org-stats-page";
-import { NotificationsPage } from "@/features/notifications/components/notifications-page";
-import { TeamPage } from "@/features/organizations/components/team-page";
-import { SchedulesPage } from "@/features/events/components/schedules-page";
-import {
-  MyProfilePage,
-  MemberProfilePage,
-} from "@/features/profile/components/profile-page";
+const LoginPage = lazyRouteComponent(() => import("@/features/auth/components/login-page"), "LoginPage");
+const AuthCallbackPage = lazyRouteComponent(() => import("@/features/auth/components/auth-callback-page"), "AuthCallbackPage");
+const SelectOrganizationPage = lazyRouteComponent(() => import("@/features/organizations/components/select-organization-page"), "SelectOrganizationPage");
+const JoinOrganizationPage = lazyRouteComponent(() => import("@/features/organizations/components/join-organization-page"), "JoinOrganizationPage");
+const CreateOrganizationPage = lazyRouteComponent(() => import("@/features/organizations/components/create-organization-page"), "CreateOrganizationPage");
+const DashboardPage = lazyRouteComponent(() => import("@/features/dashboard/components/dashboard-page"), "DashboardPage");
+const CreateEventForm = lazyRouteComponent(() => import("@/features/events/components/create-event-form"), "CreateEventForm");
+const ManageEventPage = lazyRouteComponent(() => import("@/features/events/components/manage-event-page"), "ManageEventPage");
+const EventViewPage = lazyRouteComponent(() => import("@/features/events/components/event-view-page"), "EventViewPage");
+const SwapsPage = lazyRouteComponent(() => import("@/features/swaps/components/swaps-page"), "SwapsPage");
+const SongLibrary = lazyRouteComponent(() => import("@/features/songs/components/song-library"), "SongLibrary");
+const OrgStatsPage = lazyRouteComponent(() => import("@/features/stats/components/org-stats-page"), "OrgStatsPage");
+const NotificationsPage = lazyRouteComponent(() => import("@/features/notifications/components/notifications-page"), "NotificationsPage");
+const TeamPage = lazyRouteComponent(() => import("@/features/organizations/components/team-page"), "TeamPage");
+const SchedulesPage = lazyRouteComponent(() => import("@/features/events/components/schedules-page"), "SchedulesPage");
+const MyProfilePage = lazyRouteComponent(() => import("@/features/profile/components/profile-page"), "MyProfilePage");
+const MemberProfilePage = lazyRouteComponent(() => import("@/features/profile/components/profile-page"), "MemberProfilePage");
 
 const rootRoute = createRootRoute({ component: RootLayout });
+
+function withAuth(Component: React.ComponentType, withLayout = true) {
+  return function AuthenticatedRoute() {
+    return (
+      <AuthGuard withLayout={withLayout}>
+        <Component />
+      </AuthGuard>
+    );
+  };
+}
 
 // ── Públicas ──────────────────────────────────────────────────────────────────
 
@@ -58,29 +67,17 @@ const authCallbackRoute = createRoute({
 const joinOrgRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/join/$token",
-  component: () => (
-    <AuthGuard withLayout={false}>
-      <JoinOrganizationPage />
-    </AuthGuard>
-  ),
+  component: withAuth(JoinOrganizationPage, false),
 });
 const selectOrgRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/select-organization",
-  component: () => (
-    <AuthGuard withLayout={false}>
-      <SelectOrganizationPage />
-    </AuthGuard>
-  ),
+  component: withAuth(SelectOrganizationPage, false),
 });
 const createOrgRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/create-organization",
-  component: () => (
-    <AuthGuard withLayout={false}>
-      <CreateOrganizationPage />
-    </AuthGuard>
-  ),
+  component: withAuth(CreateOrganizationPage, false),
 });
 
 // ── Com AppLayout ─────────────────────────────────────────────────────────────
@@ -88,92 +85,52 @@ const createOrgRoute = createRoute({
 const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/dashboard",
-  component: () => (
-    <AuthGuard>
-      <DashboardPage />
-    </AuthGuard>
-  ),
+  component: withAuth(DashboardPage),
 });
 const createEventRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/events/new",
-  component: () => (
-    <AuthGuard>
-      <CreateEventForm />
-    </AuthGuard>
-  ),
+  component: withAuth(CreateEventForm),
 });
 const manageEventRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/events/$eventId/manage",
-  component: () => (
-    <AuthGuard>
-      <ManageEventPage />
-    </AuthGuard>
-  ),
+  component: withAuth(ManageEventPage),
 });
 const eventViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/events/$eventId/view",
-  component: () => (
-    <AuthGuard>
-      <EventViewPage />
-    </AuthGuard>
-  ),
+  component: withAuth(EventViewPage),
 });
 const swapsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/swaps",
-  component: () => (
-    <AuthGuard>
-      <SwapsPage />
-    </AuthGuard>
-  ),
+  component: withAuth(SwapsPage),
 });
 const songsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/songs",
-  component: () => (
-    <AuthGuard>
-      <SongLibrary />
-    </AuthGuard>
-  ),
+  component: withAuth(SongLibrary),
 });
 const statsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/stats",
-  component: () => (
-    <AuthGuard>
-      <OrgStatsPage />
-    </AuthGuard>
-  ),
+  component: withAuth(OrgStatsPage),
 });
 const notificationsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/notifications",
-  component: () => (
-    <AuthGuard>
-      <NotificationsPage />
-    </AuthGuard>
-  ),
+  component: withAuth(NotificationsPage),
 });
 const teamRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/team",
-  component: () => (
-    <AuthGuard>
-      <TeamPage />
-    </AuthGuard>
-  ),
+  component: withAuth(TeamPage),
 });
 const schedulesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/schedules",
-  component: () => (
-    <AuthGuard>
-      <SchedulesPage />
-    </AuthGuard>
-  ),
+  component: withAuth(SchedulesPage),
 });
 
 // ── Perfil ────────────────────────────────────────────────────────────────────
@@ -181,20 +138,12 @@ const schedulesRoute = createRoute({
 const myProfileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/profile",
-  component: () => (
-    <AuthGuard>
-      <MyProfilePage />
-    </AuthGuard>
-  ),
+  component: withAuth(MyProfilePage),
 });
 const memberProfileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/team/$memberId/profile",
-  component: () => (
-    <AuthGuard>
-      <MemberProfilePage />
-    </AuthGuard>
-  ),
+  component: withAuth(MemberProfilePage),
 });
 
 // ── Árvore ────────────────────────────────────────────────────────────────────
@@ -219,3 +168,5 @@ export const routeTree = rootRoute.addChildren([
   myProfileRoute,
   memberProfileRoute,
 ]);
+
+

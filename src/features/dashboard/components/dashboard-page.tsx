@@ -125,7 +125,7 @@ function UpcomingEventCard({
     <Link
       to="/events/$eventId/view"
       params={{ eventId }}
-      className="flex flex-col justify-between rounded-xl border border-border bg-surface p-3 transition hover:border-pulse/30 active:bg-border/20 min-h-[96px]"
+      className="flex flex-col justify-between rounded-xl border border-border bg-surface p-3 transition hover:border-pulse/30 active:bg-border/20 min-h-24"
     >
       <div>
         <p className="text-sm font-medium text-foreground line-clamp-2 leading-snug">

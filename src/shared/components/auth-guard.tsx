@@ -3,7 +3,7 @@ import { useAuth } from "@/shared/hooks/use-auth";
 import { AppLayout } from "./app-layout";
 
 interface AuthGuardProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   withLayout?: boolean;
 }
 
@@ -20,8 +20,6 @@ export function AuthGuard({ children, withLayout = true }: AuthGuardProps) {
   }
 
   if (!isAuthenticated) {
-    // Salva a rota atual (incluindo /join/token) antes de ir pro login
-    // O AuthCallbackPage vai ler isso depois do OAuth e redirecionar
     const currentPath = location.pathname;
     if (currentPath && currentPath !== "/login") {
       localStorage.setItem("pulso_redirect_after_login", currentPath);
@@ -32,3 +30,4 @@ export function AuthGuard({ children, withLayout = true }: AuthGuardProps) {
   if (withLayout) return <AppLayout>{children}</AppLayout>;
   return <>{children}</>;
 }
+

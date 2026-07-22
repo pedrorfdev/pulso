@@ -27,19 +27,19 @@ export function MyStatsPage() {
 
       {/* Score em destaque */}
       <div className="flex justify-center rounded-2xl border border-border bg-surface py-8">
-        <ReliabilityScore score={stats.reliabilityScore} size="lg" />
+        <ReliabilityScore score={stats.reliability_score} size="lg" />
       </div>
 
       {/* Cards de detalhe */}
       <div className="grid grid-cols-2 gap-3">
         <StatCard
           label="Confirmações no prazo"
-          value={stats.confirmedOnTime}
+          value={stats.confirmed_on_time}
           positive
         />
         <StatCard
           label="Confirmações com atraso"
-          value={stats.confirmedLate}
+          value={stats.confirmed_late}
         />
         <StatCard
           label="Faltas justificadas"
@@ -47,17 +47,17 @@ export function MyStatsPage() {
         />
         <StatCard
           label="Prazo perdido"
-          value={stats.deadlineMisses}
-          negative={stats.deadlineMisses > 0}
+          value={stats.deadline_misses}
+          negative={stats.deadline_misses > 0}
         />
         <StatCard
           label="Trocas solicitadas"
-          value={stats.swapsRequested}
+          value={stats.swaps_requested}
         />
         <StatCard
           label="Trocas aceitas"
-          value={stats.swapsAccepted}
-          positive={stats.swapsAccepted > 0}
+          value={stats.swaps_accepted}
+          positive={stats.swaps_accepted > 0}
         />
       </div>
 
